@@ -5,7 +5,7 @@ En Bazoocos controlarás a la ingenieria en telecomunicaciones armada con un lan
 
 Tu objetivo: aguantar todo lo posible, destruir todo lo que se mueva, y sobrevivir.
 
-<img src="sprites/prom2.png" alt="Prom2" style="max-width: 100%; height: auto;" />
+<img src="Bazoocos/sprites/prom2.png" alt="Prom2" style="max-width: 100%; height: auto;" />
 
 📜 Reglas del Juego
 
