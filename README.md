@@ -1,5 +1,5 @@
 
-🎮 ¿De qué va Bazoocos?
+🎮 ¿De qué va BazooCOS?
 
 En Bazoocos controlarás a la ingenieria en telecomunicaciones armada con un lanzacohetes Hispano, María del Cos,  mientras esquivas drones enemigos, disparas en todas direcciones y recoges mejoras. Cada cierto tiempo, un Boss Dron gigante aparece en pantalla para desafiar tu habilidad.
 
