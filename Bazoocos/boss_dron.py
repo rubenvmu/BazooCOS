@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from config import *
 from objetos import crear_drop_random
 
@@ -19,39 +20,58 @@ class BossDron:
     def __init__(self):
         self.image = BossDron.boss_image.copy()
         self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, 100))
-        self.health = 300  # 30 corazones (10 vida por corazón)
-        self.opacity = 255
+        self.health = 50  # 5 corazones
         self.dead = False
-        self.last_teleport = pygame.time.get_ticks()
-        self.last_shot = pygame.time.get_ticks()
+
         self.lasers = []
-        self.teleport_cooldown = 10000  # 10 segundos
-        self.shot_interval = 1500  # Dispara cada 1.5s
-        self.invulnerable = False  # inmune a hackeo
+        self.last_shot = pygame.time.get_ticks()
+        self.last_circle_shot = pygame.time.get_ticks()
+        self.shot_interval = 1500
+        self.circle_interval = 10000  # cada 10s
+
+        self.speed = 2
+        self.direction = random.choice([-1, 1])  # izquierda o derecha
+
         self.glow_surface = pygame.Surface((self.rect.width + 30, self.rect.height + 30), pygame.SRCALPHA)
 
     def update(self):
         now = pygame.time.get_ticks()
 
-        # Teletransporte
-        if now - self.last_teleport > self.teleport_cooldown:
-            if self.rect.centerx < SCREEN_WIDTH // 2:
-                self.rect.x = SCREEN_WIDTH - self.rect.width - 50
-            else:
-                self.rect.x = 50
-            self.last_teleport = now
+        # Movimiento lateral
+        self.rect.x += self.speed * self.direction
+        if self.rect.left <= 0 or self.rect.right >= SCREEN_WIDTH:
+            self.direction *= -1
 
-        # Disparar láser
+        # Disparo frontal normal
         if now - self.last_shot > self.shot_interval:
             laser_rect = BossDron.laser_image.get_rect(midtop=self.rect.midbottom)
-            self.lasers.append(laser_rect)
+            self.lasers.append({'rect': laser_rect, 'vx': 0, 'vy': 6})
             self.last_shot = now
 
-        # Mover láseres
-        for laser in self.lasers:
-            laser.y += 6
+        # Disparo circular
+        if now - self.last_circle_shot > self.circle_interval:
+            self.shoot_circle()
+            self.last_circle_shot = now
 
-        self.lasers = [l for l in self.lasers if l.top < SCREEN_HEIGHT]
+        # Movimiento de proyectiles
+        for laser in self.lasers:
+            laser['rect'].x += laser['vx']
+            laser['rect'].y += laser['vy']
+
+        self.lasers = [l for l in self.lasers if l['rect'].bottom > 0 and l['rect'].top < SCREEN_HEIGHT and l['rect'].right > 0 and l['rect'].left < SCREEN_WIDTH]
+
+    def shoot_circle(self):
+        center_x = self.rect.centerx
+        center_y = self.rect.bottom
+        num_projectiles = 20
+        angle_step = 2 * math.pi / num_projectiles
+        speed = 4
+        for i in range(num_projectiles):
+            angle = i * angle_step
+            vx = speed * math.cos(angle)
+            vy = speed * math.sin(angle)
+            rect = BossDron.laser_image.get_rect(center=(center_x, center_y))
+            self.lasers.append({'rect': rect, 'vx': vx, 'vy': vy})
 
     def draw(self, screen):
         # Aura roja
@@ -62,22 +82,19 @@ class BossDron:
         screen.blit(self.image, self.rect)
 
         for laser in self.lasers:
-            screen.blit(BossDron.laser_image, laser)
+            screen.blit(BossDron.laser_image, laser['rect'])
 
     def hit(self):
         if not self.dead:
             self.health -= 10  # 10 de vida por disparo = 1 corazón
             if self.health <= 0:
                 self.dead = True
-                return True, []  # No dropea nada
+                return True, []
         return False, []
-
-    def collides_with(self, rect):
-        return self.rect.colliderect(rect)
 
     def lasers_hit_player(self, player):
         for laser in self.lasers[:]:
-            if laser.colliderect(player.rect):
+            if laser['rect'].colliderect(player.rect):
                 player.take_damage(10)
                 self.lasers.remove(laser)
 

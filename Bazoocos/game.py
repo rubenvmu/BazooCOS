@@ -46,7 +46,7 @@ class Game:
         self.drones.append(Drone(random.choice(["left", "right"])))
 
     def maybe_spawn_boss(self):
-        if self.player.score >= 250 and self.player.score % 250 == 0 and self.boss is None:
+        if self.player.score >= 200 and self.player.score % 200 == 0 and self.boss is None:
             self.boss = BossDron()
 
     def handle_event(self, event):
